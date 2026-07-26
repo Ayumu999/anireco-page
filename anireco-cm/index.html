@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ja" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --navy: #0a1420;
+        --panel: #0e1a2b;
+        --lime: #a3e635;
+        --orange: #fb923c;
+        --ink: #eaf3ff;
+        --muted: #9db2cc;
+      }
+
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      body {
+        font-family: "Noto Sans JP", sans-serif;
+        letter-spacing: 0;
+      }
+      .mono { font-family: "JetBrains Mono", monospace; }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+      .scene-shell,
+      .scene-fill {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .scene-shell { opacity: 0; overflow: hidden; }
+      .photo {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform-origin: center center;
+        will-change: transform;
+      }
+      .photo-shade {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(10, 20, 32, 0.16) 0%, rgba(10, 20, 32, 0.02) 52%, rgba(10, 20, 32, 0.38) 100%);
+      }
+      .top-rule {
+        position: absolute;
+        left: 96px;
+        right: 96px;
+        top: 74px;
+        height: 2px;
+        background: rgba(234, 243, 255, 0.7);
+        transform-origin: left center;
+      }
+      .micro-label {
+        position: absolute;
+        left: 96px;
+        top: 98px;
+        color: var(--ink);
+        font-size: 22px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .micro-label span { color: var(--lime); }
+
+      #aerial-photo { object-position: center 46%; }
+      .aerial-lock {
+        position: absolute;
+        left: 96px;
+        bottom: 76px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        color: var(--ink);
+      }
+      .aerial-pulse {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--lime);
+        box-shadow: 0 0 0 10px rgba(163, 230, 53, 0.18);
+      }
+      .aerial-copy { font-size: 30px; font-weight: 800; }
+
+      #arrival-photo { object-position: center 48%; }
+      .arrival-vignette {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(10, 20, 32, 0.08) 35%, rgba(10, 20, 32, 0.76) 100%);
+      }
+      .arrival-hud {
+        position: absolute;
+        left: 96px;
+        right: 96px;
+        bottom: 76px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        color: var(--ink);
+      }
+      #arrival-location { display: flex; flex-direction: column; gap: 13px; }
+      .arrival-kicker { color: var(--lime); font-size: 20px; font-weight: 800; }
+      .arrival-title { font-size: 50px; line-height: 1.1; font-weight: 900; }
+      .arrival-distance {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        border: 2px solid rgba(234, 243, 255, 0.72);
+        background: rgba(10, 20, 32, 0.66);
+        color: var(--ink);
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .arrival-distance::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--lime);
+      }
+
+      #gorilla-photo { object-position: center 50%; }
+      .gorilla-shade {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(10, 20, 32, 0.04) 0%, rgba(10, 20, 32, 0.12) 48%, rgba(10, 20, 32, 0.82) 74%, rgba(10, 20, 32, 0.94) 100%);
+      }
+      #focus-frame {
+        position: absolute;
+        left: 110px;
+        top: 190px;
+        width: 700px;
+        height: 650px;
+        border: 1px solid rgba(163, 230, 53, 0.46);
+        opacity: 0;
+        overflow: hidden;
+      }
+      .focus-corner {
+        position: absolute;
+        width: 52px;
+        height: 52px;
+        border-color: var(--lime);
+        border-style: solid;
+      }
+      .focus-corner.tl { left: -1px; top: -1px; border-width: 6px 0 0 6px; }
+      .focus-corner.tr { right: -1px; top: -1px; border-width: 6px 6px 0 0; }
+      .focus-corner.bl { left: -1px; bottom: -1px; border-width: 0 0 6px 6px; }
+      .focus-corner.br { right: -1px; bottom: -1px; border-width: 0 6px 6px 0; }
+      #scan-line {
+        position: absolute;
+        left: 24px;
+        right: 24px;
+        top: 30px;
+        height: 5px;
+        background: var(--lime);
+        box-shadow: 0 0 26px rgba(163, 230, 53, 0.9);
+      }
+      .focus-id {
+        position: absolute;
+        left: 18px;
+        top: 18px;
+        color: var(--lime);
+        padding: 8px 10px;
+        background: rgba(10, 20, 32, 0.88);
+        font-size: 18px;
+        font-weight: 800;
+      }
+      #ar-panel {
+        position: absolute;
+        right: 96px;
+        top: 164px;
+        width: 720px;
+        min-height: 658px;
+        padding: 52px 54px 50px 58px;
+        border-left: 5px solid var(--lime);
+        background: rgba(10, 20, 32, 0.9);
+        color: var(--ink);
+        opacity: 0;
+      }
+      .ar-panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 58px;
+      }
+      .ar-label { color: var(--lime); font-size: 21px; font-weight: 800; }
+      #analysis-state {
+        padding: 10px 14px;
+        border: 1px solid rgba(163, 230, 53, 0.6);
+        color: var(--lime);
+        font-size: 17px;
+        font-weight: 800;
+        opacity: 0;
+      }
+      .behavior-label { color: var(--muted); font-size: 22px; font-weight: 700; }
+      #behavior-title {
+        margin-top: 12px;
+        font-size: 78px;
+        line-height: 1.08;
+        font-weight: 900;
+        opacity: 0;
+      }
+      #behavior-note {
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(157, 178, 204, 0.34);
+        color: var(--ink);
+        font-size: 30px;
+        line-height: 1.45;
+        font-weight: 700;
+        opacity: 0;
+      }
+      .probability {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 34px;
+        color: var(--muted);
+        font-size: 17px;
+        font-weight: 700;
+      }
+      .probability-bar {
+        position: relative;
+        width: 280px;
+        height: 8px;
+        overflow: hidden;
+        background: rgba(157, 178, 204, 0.22);
+      }
+      #probability-fill {
+        position: absolute;
+        inset: 0;
+        background: var(--orange);
+        transform: scaleX(0);
+        transform-origin: left center;
+      }
+
+      #ar-view-photo { object-position: center 46%; }
+      .ar-view-wash {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(10, 20, 32, 0.02) 45%, rgba(10, 20, 32, 0.9) 100%);
+      }
+      .complete-chip {
+        position: absolute;
+        left: 96px;
+        top: 76px;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 13px 17px;
+        background: rgba(10, 20, 32, 0.78);
+        border: 1px solid rgba(163, 230, 53, 0.68);
+        color: var(--lime);
+        font-size: 19px;
+        font-weight: 800;
+        opacity: 0;
+      }
+      .complete-chip::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--lime);
+      }
+      #analysis-copy {
+        position: absolute;
+        left: 96px;
+        right: 96px;
+        bottom: 72px;
+        color: var(--ink);
+        font-size: 72px;
+        line-height: 1.18;
+        font-weight: 900;
+        opacity: 0;
+      }
+      #analysis-copy .instant { color: var(--lime); }
+
+      .aerial-title,
+      .brand-ar,
+      .brand-final {
+        background: linear-gradient(115deg, #a3e635, #fb923c);
+        background-clip: text;
+        color: transparent;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter:
+          drop-shadow(0 0 18px rgba(163, 230, 53, 0.4))
+          drop-shadow(0 8px 30px rgba(251, 146, 60, 0.28));
+      }
+      .aerial-title {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-size: 96px;
+        font-weight: 900;
+        line-height: 1;
+        white-space: nowrap;
+        opacity: 0;
+        transform-origin: center center;
+      }
+
+      .brand-bg { background: #0a1420; }
+      .brand-bg::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(1000px 700px at 50% 40%, rgba(163, 230, 53, 0.12), transparent 62%),
+          radial-gradient(800px 600px at 72% 72%, rgba(251, 146, 60, 0.08), transparent 60%);
+        box-shadow: inset 0 0 280px 70px rgba(4, 9, 17, 0.65);
+        pointer-events: none;
+      }
+      .brand-stage {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      .brand-word,
+      .brand-ar,
+      .brand-final {
+        position: absolute;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        line-height: 1;
+        opacity: 0;
+        transform-origin: center center;
+      }
+      .brand-word {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 104px;
+        font-weight: 700;
+        color: #eaf3ff;
+        white-space: nowrap;
+      }
+      .brand-letter {
+        display: inline-block;
+        flex: 0 0 auto;
+        transform-origin: 50% 60%;
+      }
+      .brand-space { width: 0.62em; }
+      .brand-ar {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 104px;
+        font-weight: 700;
+      }
+      .brand-final {
+        font-size: 190px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main data-hf-id="hf-h2id" id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1920" data-height="1080">
+      <section data-hf-id="hf-fm11" id="scene-aerial" class="clip scene" data-start="0" data-duration="2.475" data-track-index="0">
+        <div data-hf-id="hf-orlt" id="aerial-shell" class="scene-shell" data-layout-allow-overflow="" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+          <img data-hf-id="hf-2woa" id="aerial-photo" class="photo" data-layout-allow-overflow="" src="assets/zoo-aerial.png" alt="動物園の俯瞰">
+          <div data-hf-id="hf-wqiw" class="photo-shade"></div>
+          <div data-hf-id="hf-ixg3" id="aerial-rule" class="top-rule"></div>
+          <div data-hf-id="hf-n8y2" class="micro-label mono"><span data-hf-id="hf-67je">AR / 01</span>&#160;&#160;APPROACH</div>
+          <div data-hf-id="hf-title" id="aerial-title" class="aerial-title" data-layout-allow-overlap="">Future Zoo Experience</div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-0a7f" id="scene-arrival" class="clip scene" data-start="1.95" data-duration="2.025" data-track-index="1">
+        <div data-hf-id="hf-bdzo" id="arrival-shell" class="scene-shell" data-layout-allow-overflow="" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+          <img data-hf-id="hf-mhpr" id="arrival-photo" class="photo" data-layout-allow-overflow="" src="assets/gorilla-arrival-ar-woman.png" alt="ARグラスをかけた女性がゴリラ舎へ向かう">
+          <div data-hf-id="hf-6s6m" class="arrival-vignette"></div>
+
+        </div>
+      </section>
+
+      <section data-hf-id="hf-amoj" id="scene-gorilla" class="clip scene" data-start="3.525" data-duration="4.875" data-track-index="2">
+        <div data-hf-id="hf-qosh" id="gorilla-shell" class="scene-shell" data-layout-allow-overflow="" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+          <img data-hf-id="hf-i7fg" id="gorilla-photo" class="photo" data-layout-allow-overflow="" src="assets/gorilla-display-clean.png" alt="空の手で威嚇行動を見せるゴリラ">
+          <div data-hf-id="hf-7g9y" class="gorilla-shade"></div>
+          <div data-hf-id="hf-6cm3" id="focus-frame">
+            <div data-hf-id="hf-czn2" class="focus-corner tl"></div>
+            <div data-hf-id="hf-xe9k" class="focus-corner tr"></div>
+            <div data-hf-id="hf-nzcc" class="focus-corner bl"></div>
+            <div data-hf-id="hf-yybe" class="focus-corner br"></div>
+            <div data-hf-id="hf-6j9l" id="scan-line"></div>
+            <div data-hf-id="hf-z528" class="focus-id mono">SUBJECT 01</div>
+          </div>
+          <aside data-hf-id="hf-azjs" id="ar-panel">
+            <div data-hf-id="hf-7it3" class="ar-panel-head">
+              <div data-hf-id="hf-j6kd" class="ar-label mono">AR AI COMMENTARY</div>
+              <div data-hf-id="hf-iov8" id="analysis-state" class="mono">ANALYZING</div>
+            </div>
+            <div data-hf-id="hf-76w2" class="behavior-label">検出された行動</div>
+            <div data-hf-id="hf-kldd" id="behavior-title">威嚇行動</div>
+            <div data-hf-id="hf-qgl8" id="behavior-note">周囲への警告を示している可能性があります。</div>
+            <div data-hf-id="hf-09v0" class="probability mono">
+              CONFIDENCE
+              <div data-hf-id="hf-tak5" class="probability-bar"><div data-hf-id="hf-b8lk" id="probability-fill"></div></div>
+              92%
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-mv7r" id="scene-ar-view" class="clip scene" data-start="7.875" data-duration="3" data-track-index="3">
+        <div data-hf-id="hf-5o82" id="ar-view-shell" class="scene-shell" data-layout-allow-overflow="" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+          <img data-hf-id="hf-yac2" id="ar-view-photo" class="photo" data-layout-allow-overflow="" src="assets/ar-gorilla-view.webp" alt="ARグラス越しのゴリラとAI解説">
+          <div data-hf-id="hf-24ar" class="ar-view-wash"></div>
+          <div data-hf-id="hf-e5ya" id="complete-chip" class="complete-chip mono">ANALYSIS COMPLETE</div>
+          <div data-hf-id="hf-cj80" id="analysis-copy">その<span data-hf-id="hf-1bq0" class="instant">一瞬</span>を、AIが解説。</div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-5vpw" id="scene-brand" class="clip scene" data-start="10.575" data-duration="4.425" data-track-index="4">
+        <div data-hf-id="hf-yb25" id="brand-shell" class="scene-shell brand-bg" data-layout-allow-overflow="" data-layout-allow-occlusion="" data-layout-allow-overlap="">
+          <div data-hf-id="hf-jbts" class="brand-stage" data-layout-allow-overlap="" data-layout-allow-occlusion="">
+            <div data-hf-id="hf-hkrx" id="brand-word" class="brand-word" aria-label="Animal Recorder" data-layout-allow-overlap="" data-layout-allow-overflow="">
+              <span data-hf-id="hf-a001" id="brand-a" class="brand-letter keep">A</span>
+              <span data-hf-id="hf-a002" id="brand-n" class="brand-letter fall" data-layout-allow-overflow="">n</span>
+              <span data-hf-id="hf-a003" id="brand-i" class="brand-letter fall" data-layout-allow-overflow="">i</span>
+              <span data-hf-id="hf-a004" id="brand-m" class="brand-letter fall" data-layout-allow-overflow="">m</span>
+              <span data-hf-id="hf-a005" id="brand-a2" class="brand-letter fall" data-layout-allow-overflow="">a</span>
+              <span data-hf-id="hf-a006" id="brand-l" class="brand-letter fall" data-layout-allow-overflow="">l</span>
+              <span data-hf-id="hf-a007" class="brand-space">&#160;</span>
+              <span data-hf-id="hf-a008" id="brand-r" class="brand-letter keep">R</span>
+              <span data-hf-id="hf-a009" id="brand-e1" class="brand-letter fall" data-layout-allow-overflow="">e</span>
+              <span data-hf-id="hf-a010" id="brand-c" class="brand-letter fall" data-layout-allow-overflow="">c</span>
+              <span data-hf-id="hf-a011" id="brand-o" class="brand-letter fall" data-layout-allow-overflow="">o</span>
+              <span data-hf-id="hf-a012" id="brand-r2" class="brand-letter fall" data-layout-allow-overflow="">r</span>
+              <span data-hf-id="hf-a013" id="brand-d" class="brand-letter fall" data-layout-allow-overflow="">d</span>
+              <span data-hf-id="hf-a014" id="brand-e2" class="brand-letter fall" data-layout-allow-overflow="">e</span>
+              <span data-hf-id="hf-a015" id="brand-r3" class="brand-letter fall" data-layout-allow-overflow="">r</span>
+            </div>
+            <div data-hf-id="hf-63sw" id="brand-ar" class="brand-ar" data-layout-allow-overlap="">AR</div>
+            <div data-hf-id="hf-jmpz" id="brand-final" class="brand-final" data-layout-allow-overlap="">アニレコ！</div>
+          </div>
+        </div>
+      </section>
+
+      <audio data-hf-id="hf-kb5l" id="audio-zoo" src="assets/zoo-ambience-15s.wav" data-start="0" data-duration="10.65" data-track-index="20" data-volume="0.22"></audio>
+      <audio data-hf-id="hf-5ifb" id="audio-steps" src="assets/footsteps-gravel.wav" data-start="1.875" data-duration="2.1" data-track-index="21" data-volume="0.2"></audio>
+      <audio data-hf-id="hf-isl4" id="audio-gorilla-hit" src=".media/audio/sfx/sfx_002.mp3" data-start="3.33" data-duration="2.6" data-track-index="22" data-volume="0.24"></audio>
+      <audio data-hf-id="hf-no17" id="audio-scan" src=".media/audio/sfx/sfx_001.mp3" data-start="4.38" data-duration="0.4" data-track-index="23" data-volume="0.56"></audio>
+      <audio data-hf-id="hf-t21e" id="audio-lock" src=".media/audio/sfx/sfx_005.mp3" data-start="5.67" data-duration="0.4" data-track-index="24" data-volume="0.4"></audio>
+      <audio data-hf-id="hf-pe76" id="audio-complete" src=".media/audio/sfx/sfx_003.mp3" data-start="7.62" data-duration="2.5" data-track-index="25" data-volume="0.34"></audio>
+      <audio data-hf-id="hf-aqt9" id="audio-logo" src=".media/audio/sfx/sfx_004.mp3" data-start="12.825" data-duration="1.45" data-track-index="26" data-volume="0.48"></audio>
+    </main>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#aerial-shell", { opacity: 0 }, { opacity: 1, duration: 0.27, ease: "none", immediateRender: false }, 0)
+        .fromTo("#aerial-photo", { scale: 1.03, x: 0, y: 0 }, { scale: 1.15, x: -16, y: -24, duration: 2.37, ease: "power1.inOut", immediateRender: false }, 0)
+        .fromTo("#aerial-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.825, ease: "power3.out", immediateRender: false }, 0.18)
+        .fromTo("#aerial-title", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.66, ease: "power4.out", immediateRender: false }, 0.27)
+        .to("#aerial-shell", { opacity: 0, scale: 1.06, duration: 0.375, ease: "power2.in" }, 2.1);
+
+      tl.fromTo("#arrival-shell", { opacity: 0, scale: 1.04 }, { opacity: 1, scale: 1, duration: 0.42, ease: "power2.out", immediateRender: false }, 1.98)
+        .fromTo("#arrival-photo", { scale: 1.06, x: 24 }, { scale: 1.13, x: -20, duration: 1.92, ease: "power1.inOut", immediateRender: false }, 1.98)
+        .to("#arrival-shell", { opacity: 0, scale: 1.09, x: -36, duration: 0.45, ease: "power2.in" }, 3.48);
+
+      tl.fromTo("#gorilla-shell", { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power3.out", immediateRender: false }, 3.525)
+        .fromTo("#gorilla-photo", { scale: 1.04, x: -22 }, { scale: 1.1, x: 10, duration: 4.65, ease: "power1.inOut", immediateRender: false }, 3.525)
+        .fromTo("#focus-frame", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.51, ease: "power3.out", immediateRender: false }, 4.02)
+        .fromTo("#scan-line", { y: 0, opacity: 0.25 }, { y: 566, opacity: 1, duration: 1.725, ease: "power1.inOut", immediateRender: false }, 4.23)
+        .fromTo("#ar-panel", { opacity: 0, x: 86 }, { opacity: 1, x: 0, duration: 0.78, ease: "power4.out", immediateRender: false }, 4.575)
+        .fromTo("#analysis-state", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.42, ease: "power3.out", immediateRender: false }, 5.28)
+        .fromTo("#behavior-title", { opacity: 0, y: 32 }, { opacity: 1, y: 0, duration: 0.63, ease: "power4.out", immediateRender: false }, 5.58)
+        .fromTo("#behavior-note", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.63, ease: "power3.out", immediateRender: false }, 6.03)
+        .fromTo("#probability-fill", { scaleX: 0 }, { scaleX: 0.92, duration: 1.05, ease: "power2.out", immediateRender: false }, 5.79)
+        .to("#analysis-state", { color: "#eaf3ff", borderColor: "rgba(234,243,255,0.45)", duration: 0.375 }, 6.75)
+        .to("#gorilla-shell", { opacity: 0, scale: 1.025, duration: 0.48, ease: "power2.in" }, 7.92);
+
+      tl.fromTo("#ar-view-shell", { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "none", immediateRender: false }, 7.875)
+        .fromTo("#ar-view-photo", { scale: 1.03, x: 18 }, { scale: 1.11, x: -18, duration: 2.925, ease: "power1.inOut", immediateRender: false }, 7.875)
+        .fromTo("#complete-chip", { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.51, ease: "power3.out", immediateRender: false }, 8.175)
+        .fromTo("#analysis-copy", { opacity: 0, y: 54 }, { opacity: 1, y: 0, duration: 0.78, ease: "power4.out", immediateRender: false }, 8.55)
+        .to("#ar-view-shell", { opacity: 0, scale: 1.03, duration: 0.42, ease: "power2.in" }, 10.425);
+
+      const brandKeeps = [document.querySelector("#brand-a"), document.querySelector("#brand-r")];
+      const brandWordRect = document.querySelector("#brand-word").getBoundingClientRect();
+      const brandKeepRects = brandKeeps.map((letter) => letter.getBoundingClientRect());
+      const brandKeepWidth = brandKeepRects.reduce((sum, rect) => sum + rect.width, 0);
+      let brandKeepLeft = brandWordRect.left + brandWordRect.width / 2 - brandKeepWidth / 2;
+      const brandKeepX = brandKeepRects.map((rect) => {
+        const x = brandKeepLeft - rect.left;
+        brandKeepLeft += rect.width;
+        return x;
+      });
+      const brandFalls = [
+        ["#brand-n", -12, -36, 0.02],
+        ["#brand-i", 6, 22, 0.3],
+        ["#brand-m", 10, -18, 0.12],
+        ["#brand-a2", -8, 30, 0.22],
+        ["#brand-l", 14, -26, 0.06],
+        ["#brand-e1", -10, 18, 0.26],
+        ["#brand-c", 8, -32, 0.1],
+        ["#brand-o", -14, 26, 0.34],
+        ["#brand-r2", 12, -20, 0.16],
+        ["#brand-d", -6, 34, 0],
+        ["#brand-e2", 10, -24, 0.28],
+        ["#brand-r3", -12, 28, 0.18]
+      ];
+
+      tl.fromTo("#brand-shell", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "none", immediateRender: false }, 10.575)
+        .fromTo("#brand-word", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.51, ease: "power3.out", immediateRender: false }, 10.74);
+
+      brandFalls.forEach(([selector, x, rotation, delay]) => {
+        tl.to(selector, { x, y: 780, rotation, opacity: 0, duration: 1.08, ease: "power3.in" }, 11.22 + delay * 0.825);
+      });
+
+      tl.to("#brand-a", { x: brandKeepX[0], duration: 0.69, ease: "power4.out" }, 12.045)
+        .to("#brand-r", { x: brandKeepX[1], duration: 0.69, ease: "power4.out" }, 12.045)
+        .fromTo("#brand-ar", { opacity: 0, scale: 1 }, { opacity: 1, scale: 1.8, duration: 0.36, ease: "power4.out", immediateRender: false }, 12.42)
+        .to("#brand-a, #brand-r", { opacity: 0, duration: 0.18, ease: "none" }, 12.465)
+        .to("#brand-ar", { scale: 1.96, duration: 0.15, ease: "power2.out" }, 12.78)
+        .to("#brand-ar", { scale: 1.8, duration: 0.18, ease: "power2.inOut" }, 12.93)
+        .to("#brand-ar", { opacity: 0, scale: 0, rotation: -540, duration: 0.63, ease: "power3.in" }, 13.14)
+        .fromTo("#brand-final", { opacity: 0, scale: 0, rotation: 540 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.81, ease: "power4.out", immediateRender: false }, 13.23);
+
+      tl.to("#audio-zoo", { volume: 0.09, duration: 0.42, ease: "power2.out" }, 3.39)
+        .to("#audio-zoo", { volume: 0.045, duration: 0.6, ease: "power2.out" }, 7.8)
+        .to("#audio-zoo", { volume: 0, duration: 0.57, ease: "power2.in" }, 10.08);
+
+      window.__timelines.main = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+# 依存関係
+node_modules/
+
+# HyperFrames の作業キャッシュ（再生成される）
+anireco-cm/.hyperframes/
+anireco-cm/.media/
+anireco-cm/.thumbnails/
+anireco-cm/.waveform-cache/
+
+# レンダリング検証用の中間生成物（コンタクトシート・フレーム書き出し）
+anireco-cm/snapshots/
+
+# プレビューサーバーのログ
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

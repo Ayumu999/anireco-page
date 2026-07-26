@@ -1,0 +1,53 @@
+{
+  "duration": 15,
+  "maxStaticSec": 1.875,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "#aerial-title",
+      "bySec": 1.05
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "#ar-panel",
+      "bySec": 5.25
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "#behavior-title",
+      "bySec": 6.225
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "#analysis-copy",
+      "bySec": 9.3
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "#brand-final",
+      "bySec": 13.8
+    },
+    {
+      "kind": "before",
+      "a": "#brand-word",
+      "b": "#brand-ar"
+    },
+    {
+      "kind": "before",
+      "a": "#brand-ar",
+      "b": "#brand-final"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": "#ar-panel"
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": "#brand-final"
+    },
+    {
+      "kind": "keepsMoving",
+      "withinSelector": "#root"
+    }
+  ]
+}

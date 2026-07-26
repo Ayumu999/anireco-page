@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0A1420; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: "Noto Sans JP", sans-serif; color: #EAF3FF; }
+      .image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .wash { position: absolute; inset: 0; background: rgba(10, 20, 32, 0.2); }
+      .focus { position: absolute; left: 194px; top: 214px; width: 620px; height: 620px; border: 3px solid #A3E635; }
+      .focus::before, .focus::after { content: ""; position: absolute; inset: 20px; border-top: 6px solid #A3E635; border-bottom: 6px solid #A3E635; }
+      .panel { position: absolute; right: 116px; top: 174px; width: 790px; min-height: 560px; padding: 54px 60px; background: rgba(10, 20, 32, 0.9); border: 2px solid #A3E635; border-radius: 8px; }
+      .label { color: #A3E635; font: 700 22px "JetBrains Mono", Consolas, monospace; }
+      h1 { margin: 54px 0 26px; font-size: 72px; line-height: 1.12; letter-spacing: 0; }
+      h1 span { color: #FB923C; }
+      p { margin: 0; font-size: 36px; line-height: 1.5; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-25oi" id="root" data-composition-id="frame-02-anireco" data-start="0" data-duration="5.2" data-width="1920" data-height="1080">
+      <img data-hf-id="hf-0z4k" class="image" src="assets/gorilla-display-clean.png" alt="空の手で威嚇行動を見せるゴリラ">
+      <div data-hf-id="hf-7h0d" class="wash"></div>
+      <div data-hf-id="hf-rp14" class="focus"></div>
+      <div data-hf-id="hf-owjm" class="panel">
+        <div data-hf-id="hf-t6i6" class="label">AR AI COMMENTARY</div>
+        <h1 data-hf-id="hf-xngx">威嚇。<br data-hf-id="hf-x5px">そして、<span data-hf-id="hf-x9ik">求愛。</span></h1>
+        <p data-hf-id="hf-9lco">その一瞬を、AIが解説。</p>
+      </div>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["frame-02-anireco"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>
+
+
